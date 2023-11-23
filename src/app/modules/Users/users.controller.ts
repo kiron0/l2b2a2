@@ -9,7 +9,7 @@ import {
   updateUserService,
   getAllOrderService,
 } from './users.service'
-import { validateUser } from './users.validation'
+import userValidationSchema from './users.validation'
 
 export const signUpController = async (
   req: Request,
@@ -18,24 +18,24 @@ export const signUpController = async (
   try {
     const user: IUser = req.body
 
-    const { success, errors } = validateUser(user)
+    const { error, value } = userValidationSchema.validate(user)
 
-    if (success) {
-      const result = await signUpService(user)
+    if (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message,
+        error: {
+          code: 400,
+          description: error.message,
+        },
+      })
+    } else {
+      const result = await signUpService(value)
 
       res.status(201).json({
         success: true,
-        message: 'User created successfully',
+        message: 'User created successfully!',
         data: result,
-      })
-    } else {
-      res.status(400).json({
-        success: false,
-        message: 'Bad request',
-        error: {
-          code: 400,
-          description: (errors as any)[0].message,
-        },
       })
     }
   } catch (err: unknown) {
@@ -59,7 +59,7 @@ export const getAllUsersController = async (
 
     res.status(200).json({
       success: true,
-      message: 'Get all users successfully',
+      message: 'Users fetched successfully!',
       data: result,
     })
   } catch (err: unknown) {
@@ -92,15 +92,13 @@ export const getUserByIdController = async (
           description: 'User not found',
         },
       })
+    } else {
+      res.status(200).json({
+        success: true,
+        message: 'User fetched successfully!',
+        data: isMatchUser,
+      })
     }
-
-    const result = await getUserByIdService(userId)
-
-    res.status(200).json({
-      success: true,
-      message: 'Get user by id successfully',
-      data: result,
-    })
   } catch (err: unknown) {
     res.status(500).json({
       success: false,
@@ -132,27 +130,27 @@ export const updateUserController = async (
           description: 'User not found',
         },
       })
-    }
-
-    const { success, errors } = validateUser(user)
-
-    if (success) {
-      const result = await updateUserService(userId, user)
-
-      res.status(201).json({
-        status: 201,
-        message: 'User updated successfully',
-        data: result,
-      })
     } else {
-      res.status(400).json({
-        success: false,
-        message: 'Bad request',
-        error: {
-          code: 400,
-          description: (errors as any)[0].message,
-        },
-      })
+      const value = userValidationSchema.validate(user)
+
+      if (value) {
+        const result = await updateUserService(userId, user)
+
+        res.status(201).json({
+          status: 201,
+          message: 'User updated successfully!',
+          data: result,
+        })
+      } else {
+        res.status(400).json({
+          success: false,
+          message: 'Bad request',
+          error: {
+            code: 400,
+            description: 'Bad request',
+          },
+        })
+      }
     }
   } catch (err: unknown) {
     res.status(500).json({
@@ -184,15 +182,15 @@ export const deleteUserController = async (
           description: 'User not found',
         },
       })
+    } else {
+      const result = await deleteUserService(userId)
+
+      res.status(200).json({
+        success: true,
+        message: 'User deleted successfully!',
+        data: result,
+      })
     }
-
-    const result = await deleteUserService(userId)
-
-    res.status(200).json({
-      success: true,
-      message: 'User deleted successfully',
-      data: result,
-    })
   } catch (err: unknown) {
     res.status(500).json({
       success: false,
@@ -232,15 +230,15 @@ export const addNewProductController = async (
           description: 'User not found',
         },
       })
+    } else {
+      const result = await addNewOrderService(userId, order)
+
+      res.status(201).json({
+        success: true,
+        message: 'Order created successfully!',
+        data: result,
+      })
     }
-
-    const result = await addNewOrderService(userId, order)
-
-    res.status(201).json({
-      success: true,
-      message: 'Add new product successfully',
-      data: result,
-    })
   } catch (err: unknown) {
     res.status(500).json({
       success: false,
@@ -271,15 +269,15 @@ export const getAllOrderController = async (
           description: 'User not found',
         },
       })
+    } else {
+      const result = await getAllOrderService(userId)
+
+      res.status(200).json({
+        success: true,
+        message: 'Order fetched successfully!',
+        data: result,
+      })
     }
-
-    const result = await getAllOrderService(userId)
-
-    res.status(200).json({
-      success: true,
-      message: 'Order fetched successfully!',
-      data: result,
-    })
   } catch (err: unknown) {
     res.status(500).json({
       success: false,
@@ -310,23 +308,23 @@ export const getTotalPriceController = async (
           description: 'User not found',
         },
       })
+    } else {
+      const result = await getAllOrderService(userId)
+
+      let totalPrice = 0
+
+      result.orders.forEach((order: any) => {
+        totalPrice += order.price * order.quantity
+      })
+
+      res.status(200).json({
+        success: true,
+        message: 'Total price calculated successfully!',
+        data: {
+          totalPrice,
+        },
+      })
     }
-
-    const result = await getAllOrderService(userId)
-
-    let totalPrice = 0
-
-    result.orders.forEach((order: any) => {
-      totalPrice += order.price * order.quantity
-    })
-
-    res.status(200).json({
-      success: true,
-      message: 'Total price fetched successfully!',
-      data: {
-        totalPrice,
-      },
-    })
   } catch (err: unknown) {
     res.status(500).json({
       success: false,

@@ -1,10 +1,8 @@
-export type IProduct =
-  | {
-      productName: string
-      price: number
-      quantity: number
-    }[]
-  | []
+export type IProduct = {
+  productName: string
+  price: number
+  quantity: number
+}[]
 
 export type IUser = {
   userId: number
