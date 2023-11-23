@@ -10,6 +10,12 @@ const app: Application = express()
 
 app.use(cors())
 
+// Set EJS as the view engine
+app.set('view engine', 'ejs')
+
+// Set the path to the views directory
+app.set('views', path.join(__dirname, '../views'))
+
 //parser
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -22,7 +28,7 @@ app.use('/api', routes)
 
 //Welcome route
 app.get('/', async (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, '../views/welcome.html'))
+  res.render('welcome')
 })
 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
