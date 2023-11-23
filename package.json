@@ -4,14 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only ./src/index.ts",
     "start": "node ./dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only ./src/index.ts",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "prettier": "prettier --write \"src/**/*.ts\"",
     "format": "yarn prettier && yarn lint:fix",
     "pre": "git pull && yarn && yarn dev",
-    "build": "yarn tsc"
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
@@ -23,7 +23,6 @@
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "ejs": "^3.1.9",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-unused-imports": "^3.0.0",

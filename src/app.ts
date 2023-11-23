@@ -10,9 +10,6 @@ const app: Application = express()
 
 app.use(cors())
 
-// Set EJS as the view engine
-app.set('view engine', 'ejs')
-
 // Set the path to the views directory
 app.set('views', path.join(__dirname, '../views'))
 
@@ -27,8 +24,8 @@ dbConnect()
 app.use('/api', routes)
 
 //Welcome route
-app.get('/', async (req: Request, res: Response, next: NextFunction) => {
-  res.render('welcome')
+app.get('/', async (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../views/welcome.html'))
 })
 
 // Error handling
@@ -36,6 +33,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   const error = new Error('Not found')
   res.status(404)
   next(error)
+})
+
+app.all('*', (req: Request, res: Response, next: NextFunction) => {
+  res.status(404).json({
+    status: false,
+    message: `Can't find ${req.originalUrl} on this server!`,
+  })
 })
 
 export default app
