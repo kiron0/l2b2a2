@@ -23,20 +23,31 @@ export const signUpController = async (
     if (error) {
       res.status(400).json({
         success: false,
-        message: error.message,
+        message: error.message || 'Bad request',
         error: {
           code: 400,
-          description: error.message,
+          description: error.message || 'Bad request',
         },
       })
     } else {
-      const result = await signUpService(value)
+      const result = await signUpService(value);
 
-      res.status(201).json({
-        success: true,
-        message: 'User created successfully!',
-        data: result,
-      })
+      if (!result.userId) {
+        res.status(400).json({
+          success: false,
+          message: result.message,
+          error: {
+            code: 400,
+            description: result.message,
+          },
+        })
+      } else {
+        res.status(201).json({
+          success: true,
+          message: 'User created successfully!',
+          data: result,
+        })
+      }
     }
   } catch (err: unknown) {
     res.status(500).json({
@@ -121,6 +132,8 @@ export const updateUserController = async (
 
     const isMatchUser = await getUserByIdService(userId)
 
+    const { error, value } = userValidationSchema.validate(user)
+
     if (!isMatchUser) {
       res.status(404).json({
         success: false,
@@ -130,25 +143,32 @@ export const updateUserController = async (
           description: 'User not found',
         },
       })
+    } else if (isMatchUser.userId !== user.userId) {
+      res.status(400).json({
+        success: false,
+        message: 'User id already exist',
+        error: {
+          code: 400,
+          description: 'User id already exist',
+        },
+      })
     } else {
-      const value = userValidationSchema.validate(user)
+      const result = await updateUserService(userId, value);
 
-      if (value) {
-        const result = await updateUserService(userId, user)
-
-        res.status(201).json({
-          status: 201,
-          message: 'User updated successfully!',
-          data: result,
-        })
-      } else {
+      if (!result.userId) {
         res.status(400).json({
           success: false,
-          message: 'Bad request',
+          message: result.message,
           error: {
             code: 400,
-            description: 'Bad request',
+            description: result.message,
           },
+        })
+      } else {
+        res.status(200).json({
+          success: true,
+          message: 'User updated successfully!',
+          data: result,
         })
       }
     }
@@ -314,7 +334,7 @@ export const getTotalPriceController = async (
       let totalPrice = 0
 
       result.orders.forEach((order: any) => {
-        totalPrice += order.price * order.quantity
+        totalPrice = Math.round((totalPrice + order.price * order.quantity) * 100) / 100
       })
 
       res.status(200).json({

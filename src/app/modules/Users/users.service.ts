@@ -13,7 +13,8 @@ export const signUpService = async (user: IUser): Promise<any> => {
 
     const result = await newUser.save()
 
-    return result
+    const { password, ...rest } = result.toObject()
+    return rest
   } catch (error: any) {
     return {
       success: false,
@@ -59,7 +60,7 @@ export const updateUserService = async (
         ...user,
         password: hashedPassword,
       },
-      { new: true },
+      { new: true, select: '-password' },
     )
 
     return result
