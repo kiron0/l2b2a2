@@ -159,7 +159,6 @@ export const getAllOrderService = async (userId: string): Promise<any> => {
 
 export const getTotalPriceService = async (userId: string): Promise<any> => {
   try {
-
     const user = new User()
 
     if (!(await user.isUserExist(userId as unknown as number))) {
@@ -167,7 +166,7 @@ export const getTotalPriceService = async (userId: string): Promise<any> => {
     }
 
     const result = await User.aggregate([
-      { $match: { userId } },
+      { $match: { userId: parseInt(userId) } },
       { $unwind: '$orders' },
       {
         $group: {

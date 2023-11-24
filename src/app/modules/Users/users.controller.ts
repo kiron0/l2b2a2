@@ -8,6 +8,7 @@ import {
   signUpService,
   updateUserService,
   getAllOrderService,
+  getTotalPriceService,
 } from './users.service'
 import userValidationSchema from './users.validation'
 
@@ -289,21 +290,24 @@ export const getTotalPriceController = async (
   try {
     const { userId } = req.params
 
-    const result = await getAllOrderService(userId)
+    const result = await getTotalPriceService(userId)
 
-    let totalPrice = 0
-
-    result.orders.forEach((order: any) => {
-      totalPrice = Math.round((totalPrice + order.price * order.quantity) * 100) / 100
-    })
-
-    res.status(200).json({
-      success: true,
-      message: 'Total price calculated successfully!',
-      data: {
-        totalPrice,
-      },
-    })
+    if (result.success === false) {
+      res.status(400).json({
+        success: false,
+        message: result.message,
+        error: {
+          code: 400,
+          description: result.message,
+        },
+      })
+    } else {
+      res.status(200).json({
+        success: true,
+        message: 'Total price calculated successfully!',
+        data: result,
+      })
+    }
   } catch (err: unknown) {
     res.status(500).json({
       success: false,
