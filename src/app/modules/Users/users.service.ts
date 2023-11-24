@@ -179,7 +179,9 @@ export const getTotalPriceService = async (userId: string): Promise<any> => {
       { $project: { _id: 0 } },
     ])
 
-    return result
+    const totalPrice = Number(result[0].totalPrice.toFixed(2))
+
+    return { totalPrice }
   } catch (error: any) {
     return {
       success: false,
