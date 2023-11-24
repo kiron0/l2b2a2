@@ -3,9 +3,8 @@ import 'dotenv/config'
 import express, { Application, NextFunction, Request, Response } from 'express'
 import * as path from 'path'
 import routes from './app/routes'
-
-// import routes here
 import { dbConnect } from './utils/dbConnect'
+
 const app: Application = express()
 
 app.use(cors())
@@ -26,11 +25,12 @@ dbConnect()
 // Application routes
 app.use('/api', routes)
 
-//Welcome route
+// Welcome route
 app.get('/', async (req: Request, res: Response) => {
   res.render('welcome')
 })
 
+// 404 route
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
   res.status(404).json({
     status: false,
