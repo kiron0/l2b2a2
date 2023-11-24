@@ -2,12 +2,19 @@ import bcrypt from 'bcrypt'
 import { User } from './users.model'
 import { IProduct, IUser } from './users.interface'
 
-export const signUpService = async (user: IUser): Promise<any> => {
+export const signUpService = async (userData: IUser): Promise<any> => {
   try {
     const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(user.password, salt)
+    const hashedPassword = await bcrypt.hash(userData.password, salt)
+
+    const user = new User(userData)
+
+    if (await user.isUserExist(userData.userId)) {
+      throw new Error('User already exist!')
+    }
+
     const newUser = await User.create({
-      ...user,
+      ...userData,
       password: hashedPassword,
     })
 
@@ -49,19 +56,27 @@ export const getUserByIdService = async (userId: string): Promise<any> => {
 
 export const updateUserService = async (
   userId: string,
-  user: IUser,
+  userData: IUser,
 ): Promise<any> => {
   try {
     const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(user.password, salt)
+    const hashedPassword = await bcrypt.hash(userData.password, salt)
+
+    const user = new User(userData)
+
+    if (!(await user.isUserExist(userId as unknown as number))) {
+      throw new Error('User not found!')
+    }
+
     const result = await User.findOneAndUpdate(
       { userId },
       {
-        ...user,
+        ...userData,
+        userId,
         password: hashedPassword,
       },
-      { new: true, select: '-password' },
-    )
+      { new: true },
+    ).select('-password')
 
     return result
   } catch (error: any) {
@@ -74,6 +89,13 @@ export const updateUserService = async (
 
 export const deleteUserService = async (userId: string): Promise<any> => {
   try {
+
+    const user = new User()
+
+    if (!(await user.isUserExist(userId as unknown as number))) {
+      throw new Error('User not found!')
+    }
+
     await User.findOneAndDelete({ userId })
     return null
   } catch (error: any) {
@@ -89,6 +111,13 @@ export const addNewOrderService = async (
   order: IProduct,
 ): Promise<any> => {
   try {
+
+    const user = new User(order)
+
+    if (!(await user.isUserExist(userId as unknown as number))) {
+      throw new Error('User not found!')
+    }
+
     const result = await User.findOneAndUpdate(
       { userId },
       {
@@ -110,6 +139,13 @@ export const addNewOrderService = async (
 
 export const getAllOrderService = async (userId: string): Promise<any> => {
   try {
+
+    const user = new User()
+
+    if (!(await user.isUserExist(userId as unknown as number))) {
+      throw new Error('User not found!')
+    }
+
     const result = await User.findOne({ userId }, { orders: 1, _id: 0 })
 
     return result
@@ -123,6 +159,13 @@ export const getAllOrderService = async (userId: string): Promise<any> => {
 
 export const getTotalPriceService = async (userId: string): Promise<any> => {
   try {
+
+    const user = new User()
+
+    if (!(await user.isUserExist(userId as unknown as number))) {
+      throw new Error('User not found!')
+    }
+
     const result = await User.aggregate([
       { $match: { userId } },
       { $unwind: '$orders' },

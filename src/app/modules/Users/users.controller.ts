@@ -130,47 +130,25 @@ export const updateUserController = async (
     const { userId } = req.params
     const user: IUser = req.body
 
-    const isMatchUser = await getUserByIdService(userId)
+    const { value } = userValidationSchema.validate(user)
 
-    const { error, value } = userValidationSchema.validate(user)
+    const result = await updateUserService(userId, value);
 
-    if (!isMatchUser) {
-      res.status(404).json({
-        success: false,
-        message: 'User not found',
-        error: {
-          code: 404,
-          description: 'User not found',
-        },
-      })
-    } else if (isMatchUser.userId !== user.userId) {
+    if (!result.userId) {
       res.status(400).json({
         success: false,
-        message: 'User id already exist',
+        message: result.message,
         error: {
           code: 400,
-          description: 'User id already exist',
+          description: result.message,
         },
       })
     } else {
-      const result = await updateUserService(userId, value);
-
-      if (!result.userId) {
-        res.status(400).json({
-          success: false,
-          message: result.message,
-          error: {
-            code: 400,
-            description: result.message,
-          },
-        })
-      } else {
-        res.status(200).json({
-          success: true,
-          message: 'User updated successfully!',
-          data: result,
-        })
-      }
+      res.status(200).json({
+        success: true,
+        message: 'User updated successfully!',
+        data: result,
+      })
     }
   } catch (err: unknown) {
     res.status(500).json({
@@ -191,20 +169,18 @@ export const deleteUserController = async (
   try {
     const { userId } = req.params
 
-    const isMatchUser = await getUserByIdService(userId)
+    const result = await deleteUserService(userId)
 
-    if (!isMatchUser) {
-      res.status(404).json({
+    if (!result.userId) {
+      res.status(400).json({
         success: false,
-        message: 'User not found',
+        message: result.message,
         error: {
-          code: 404,
-          description: 'User not found',
+          code: 400,
+          description: result.message,
         },
       })
     } else {
-      const result = await deleteUserService(userId)
-
       res.status(200).json({
         success: true,
         message: 'User deleted successfully!',
@@ -223,7 +199,7 @@ export const deleteUserController = async (
   }
 }
 
-export const addNewProductController = async (
+export const addNewOrderController = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
@@ -239,24 +215,22 @@ export const addNewProductController = async (
       },
     ] as IProduct
 
-    const isMatchUser = await getUserByIdService(userId)
+    const result = await addNewOrderService(userId, order)
 
-    if (!isMatchUser) {
-      res.status(404).json({
+    if (!result.userId) {
+      res.status(400).json({
         success: false,
-        message: 'User not found',
+        message: result.message,
         error: {
-          code: 404,
-          description: 'User not found',
+          code: 400,
+          description: result.message,
         },
       })
     } else {
-      const result = await addNewOrderService(userId, order)
-
       res.status(201).json({
         success: true,
         message: 'Order created successfully!',
-        data: result,
+        data: null,
       })
     }
   } catch (err: unknown) {
@@ -278,20 +252,18 @@ export const getAllOrderController = async (
   try {
     const { userId } = req.params
 
-    const isMatchUser = await getUserByIdService(userId)
+    const result = await getAllOrderService(userId)
 
-    if (!isMatchUser) {
-      res.status(404).json({
+    if (result.success === false) {
+      res.status(400).json({
         success: false,
-        message: 'User not found',
+        message: result.message,
         error: {
-          code: 404,
-          description: 'User not found',
+          code: 400,
+          description: result.message,
         },
       })
     } else {
-      const result = await getAllOrderService(userId)
-
       res.status(200).json({
         success: true,
         message: 'Order fetched successfully!',
@@ -317,34 +289,21 @@ export const getTotalPriceController = async (
   try {
     const { userId } = req.params
 
-    const isMatchUser = await getUserByIdService(userId)
+    const result = await getAllOrderService(userId)
 
-    if (!isMatchUser) {
-      res.status(404).json({
-        success: false,
-        message: 'User not found',
-        error: {
-          code: 404,
-          description: 'User not found',
-        },
-      })
-    } else {
-      const result = await getAllOrderService(userId)
+    let totalPrice = 0
 
-      let totalPrice = 0
+    result.orders.forEach((order: any) => {
+      totalPrice = Math.round((totalPrice + order.price * order.quantity) * 100) / 100
+    })
 
-      result.orders.forEach((order: any) => {
-        totalPrice = Math.round((totalPrice + order.price * order.quantity) * 100) / 100
-      })
-
-      res.status(200).json({
-        success: true,
-        message: 'Total price calculated successfully!',
-        data: {
-          totalPrice,
-        },
-      })
-    }
+    res.status(200).json({
+      success: true,
+      message: 'Total price calculated successfully!',
+      data: {
+        totalPrice,
+      },
+    })
   } catch (err: unknown) {
     res.status(500).json({
       success: false,

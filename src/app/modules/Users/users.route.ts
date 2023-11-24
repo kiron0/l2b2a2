@@ -5,7 +5,7 @@ import {
   signUpController,
   updateUserController,
   deleteUserController,
-  addNewProductController,
+  addNewOrderController,
   getAllOrderController,
   getTotalPriceController,
 } from './users.controller'
@@ -17,7 +17,7 @@ router.get('/', getAllUsersController)
 router.get('/:userId', getUserByIdController)
 router.put('/:userId', updateUserController)
 router.delete('/:userId', deleteUserController)
-router.put('/:userId/orders', addNewProductController)
+router.put('/:userId/orders', addNewOrderController)
 router.get('/:userId/orders', getAllOrderController)
 router.get('/:userId/orders/total-price', getTotalPriceController)
 
