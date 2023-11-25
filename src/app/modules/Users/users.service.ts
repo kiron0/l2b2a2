@@ -20,7 +20,7 @@ export const signUpService = async (userData: IUser): Promise<any> => {
 
     const result = await newUser.save()
 
-    const { password, ...rest } = result.toObject()
+    const { password, _id, ...rest } = result.toObject()
     return rest
   } catch (error: any) {
     return {
@@ -66,7 +66,7 @@ export const getAllUsersService = async (requestedFields: string[]): Promise<any
 
 export const getUserByIdService = async (userId: string): Promise<any> => {
   try {
-    const result = await User.findOne({ userId }).select('-password')
+    const result = await User.findOne({ userId }).select('-password -_id -orders')
     return result
   } catch (error: any) {
     return {
@@ -81,7 +81,7 @@ export const updateUserService = async (
   userData: IUser,
 ): Promise<any> => {
   try {
-    const { password, ...rest } = userData
+    const { password, orders, ...rest } = userData
 
     const user = new User(userData)
 

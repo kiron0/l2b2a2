@@ -75,7 +75,6 @@ const userSchema = new Schema<IUser, UserModel, UserMethods>(
     },
   },
   {
-    timestamps: true,
     versionKey: false,
   },
 )
