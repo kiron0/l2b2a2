@@ -67,7 +67,13 @@ yarn dev
 > 2. Get all users: GET
 
 ```
+   => Response will be contain only username, fullName, age, email, address
    /api/users
+
+   => For field filtering
+   /api/users/fields=username,age,fullName
+
+   => Password field will be ignored
 ```
 
 > 3. Get a single user: GET
@@ -80,6 +86,14 @@ yarn dev
 
 ```
    /api/users/:userId
+```
+
+```
+
+{
+   // Same as POST request but 'password' will be ignored
+}
+
 ```
 
 > 5.  Delete users: PUT

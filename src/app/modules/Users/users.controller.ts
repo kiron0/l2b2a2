@@ -67,13 +67,30 @@ export const getAllUsersController = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const result = await getAllUsersService()
+    const defaultFields: string[] = ['username', 'fullName', 'age', 'email', 'address'];
 
-    res.status(200).json({
-      success: true,
-      message: 'Users fetched successfully!',
-      data: result,
-    })
+    const requestedFields: string[] = req.query.fields
+      ? (req.query.fields as string).split(',')
+      : defaultFields;
+
+    const users = await getAllUsersService(requestedFields);
+
+    if (users.success === false) {
+      res.status(400).json({
+        success: false,
+        message: users.message,
+        error: {
+          code: 400,
+          description: users.message,
+        },
+      })
+    } else {
+      res.json({
+        success: true,
+        message: 'Users fetched successfully!',
+        data: users,
+      });
+    }
   } catch (err: unknown) {
     res.status(500).json({
       success: false,

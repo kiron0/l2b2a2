@@ -28,6 +28,8 @@ export type IUser = {
 
 export type UserMethods = {
   isUserExist: (userId: number) => Promise<IUser | null>
+  isUsernameExist: (username: string) => Promise<IUser | null>
+  isUserIdExist: (userId: number) => Promise<IUser | null>
 }
 
 export type UserModel = Model<IUser, Record<string, never>, UserMethods>

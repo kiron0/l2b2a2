@@ -85,4 +85,14 @@ userSchema.methods.isUserExist = async function (userId: number) {
   return existingUser;
 }
 
+userSchema.methods.isUsernameExist = async function (username: string) {
+  const existingUsername = await User.findOne({ username })
+  return existingUsername;
+}
+
+userSchema.methods.isUserIdExist = async function (userId: number) {
+  const existingUserId = await User.findOne({ userId })
+  return existingUserId;
+}
+
 export const User = model<IUser, UserModel>('User', userSchema)

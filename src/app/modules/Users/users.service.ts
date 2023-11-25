@@ -30,9 +30,31 @@ export const signUpService = async (userData: IUser): Promise<any> => {
   }
 }
 
-export const getAllUsersService = async (): Promise<any> => {
+export const getAllUsersService = async (requestedFields: string[]): Promise<any> => {
   try {
-    const result = await User.find({}, { password: 0 })
+    const defaultFields: string[] = ['username', 'fullName', 'age', 'email', 'address'];
+
+    const result = await User.aggregate([
+      {
+        $project: requestedFields.reduce((acc: any, field: string): object => {
+          if (requestedFields.length === 1 && field === 'password') {
+            return defaultFields.reduce((acc: any, field: string): object => {
+              acc[field] = `$${field}`
+              return acc;
+            }, {})
+          }
+          if (field === 'password') {
+            return acc;
+          }
+          if (!defaultFields.includes(field)) {
+            throw new Error('Invalid field!')
+          }
+          acc[field] = `$${field}`
+          return acc;
+        }, {}),
+      },
+    ])
+
     return result
   } catch (error: any) {
     return {
@@ -59,21 +81,34 @@ export const updateUserService = async (
   userData: IUser,
 ): Promise<any> => {
   try {
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(userData.password, salt)
+    const { password, ...rest } = userData
 
     const user = new User(userData)
 
-    if (!(await user.isUserExist(userId as unknown as number))) {
+    const existingUser = await user.isUserExist(userId as unknown as number)
+
+    if (!existingUser) {
       throw new Error('User not found!')
+    }
+
+    if (existingUser.username !== userData.username) {
+      const isUsernameExist = await user.isUsernameExist(userData.username)
+      if (isUsernameExist) {
+        throw new Error('Username already taken!')
+      }
+    }
+
+    if (existingUser.userId !== userData.userId) {
+      const isUserIdExist = await user.isUserIdExist(userData.userId)
+      if (isUserIdExist) {
+        throw new Error('User ID already taken!')
+      }
     }
 
     const result = await User.findOneAndUpdate(
       { userId },
       {
-        ...userData,
-        userId,
-        password: hashedPassword,
+        ...rest,
       },
       { new: true },
     ).select('-password')
