@@ -41,7 +41,7 @@ export const getAllUsersService = async (requestedFields: string[]): Promise<any
             return defaultFields.reduce((acc: any, field: string): object => {
               acc[field] = `$${field}`
               return acc;
-            }, {})
+            }, { _id: 0 })
           }
           if (field === 'password') {
             return acc;
@@ -51,7 +51,7 @@ export const getAllUsersService = async (requestedFields: string[]): Promise<any
           }
           acc[field] = `$${field}`
           return acc;
-        }, {}),
+        }, { _id: 0 }),
       },
     ])
 
