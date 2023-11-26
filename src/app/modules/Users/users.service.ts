@@ -131,8 +131,8 @@ export const deleteUserService = async (userId: string): Promise<any> => {
       throw new Error('User not found!')
     }
 
-    await User.findOneAndDelete({ userId })
-    return null
+    const result = await User.findOneAndDelete({ userId })
+    return result;
   } catch (error: any) {
     return {
       success: false,
