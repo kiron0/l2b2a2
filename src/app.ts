@@ -3,7 +3,6 @@ import 'dotenv/config'
 import express, { Application, NextFunction, Request, Response } from 'express'
 import * as path from 'path'
 import routes from './app/routes'
-import { dbConnect } from './utils/dbConnect'
 
 const app: Application = express()
 
@@ -18,9 +17,6 @@ app.set('views', path.join(__dirname, '../views'))
 // parser
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
-// Database connection
-dbConnect()
 
 // Application routes
 app.use('/api', routes)
